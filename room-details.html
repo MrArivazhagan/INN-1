@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room details</title>
+    <style>
+        /* Add or update these styles in your existing CSS file */
+
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f8f9fa; /* Light Gray */
+  color: #343a40; /* Dark Gray */
+  margin: 0;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.room-details-container {
+  background-color: #ffffff; /* White */
+  border: 1px solid #e2e8f0; /* Light Blue-Gray */
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.room-image {
+  width: 100%;
+  height: 550px;
+  object-fit: cover;
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px;
+}
+
+.room-details {
+  padding: 20px;
+}
+
+.room-details h2 {
+  margin: 0;
+  font-size: 2em;
+  color: #343a40; /* Dark Gray */
+}
+
+.room-status-available {
+  color: #28a745; /* Green */
+}
+
+.room-status-unavailable {
+  color: #dc3545; /* Red */
+}
+
+.additional-details {
+  margin-top: 20px;
+}
+
+.additional-details p {
+  margin: 5px 0;
+  font-size: 1.2em;
+  color: #555555; /* Gray */
+}
+
+    </style>
+</head>
+<body>
+    <div id="room-details-container"></div>
+        <!-- the scripts for products you want to access must be added-->
+        <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    
+        <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
+      
+      
+    
+    <script>
+
+            // web app's Firebase configuration
+            const firebaseConfig = {
+            apiKey: "AIzaSyCXay54TMVBDtKajv2-nO7DkDRvQ2EM97U",
+            authDomain: "wakens-123.firebaseapp.com",
+            databaseURL: "https://wakens-123-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "wakens-123",
+            storageBucket: "wakens-123.appspot.com",
+            messagingSenderId: "542230146975",
+            appId: "1:542230146975:web:e2cfa8d083a2f70658d7aa"
+            };
+
+            // Initialize Firebase
+            const app = firebase.initializeApp(firebaseConfig);
+
+
+        // room-details.js
+        const database = firebase.database();
+        const roomDetailsContainer = document.getElementById('room-details-container');
+
+        // Extract hotelId and roomId from the URL query parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const hotelId = urlParams.get('hotelId');
+        const roomId = urlParams.get('roomId');
+        // Check if hotelId and roomId are available
+        if (hotelId && roomId) {
+          // Listen for changes in the room details data
+          function listenForRoomDetails() {
+            const roomDetailsRef = database.ref(`Hotels/${hotelId}/${roomId}`);
+
+            roomDetailsRef.on('value', (snapshot) => {
+              const roomData = snapshot.val();
+              updateRoomDetailsUI(roomId, roomData);
+            });
+          }
+          
+        // Function to display room details
+        function updateRoomDetailsUI(roomId, roomData) {
+        roomDetailsContainer.innerHTML = '';
+        
+        const roomDetailsCard = createRoomDetailsCard(roomId, roomData);
+        roomDetailsContainer.appendChild(roomDetailsCard);
+        }
+
+        // Function to create a room details card
+        function createRoomDetailsCard(roomId, roomData) {
+        const roomDetailsCard = document.createElement('div');
+        roomDetailsCard.classList.add('room-card');
+
+        // Video
+        const roomVideo = document.createElement('video');
+        roomVideo.classList.add('room-image'); // Reusing the 'hotel-image' class for styling
+        roomVideo.src = roomData.video || 'placeholder-video.mp4';
+        roomVideo.setAttribute('controls', 'controls');
+        roomDetailsCard.appendChild(roomVideo);
+
+        // Room ID
+        const roomIdElement = document.createElement('h3');
+        roomIdElement.textContent = `Room ${roomId}`;
+        roomDetailsCard.appendChild(roomIdElement);
+
+        // Availability Status
+        const availabilityStatus = document.createElement('p');
+        availabilityStatus.textContent = roomData.available ? 'Available' : 'Not Available';
+        availabilityStatus.classList.add(
+            roomData.available ? 'room-status-available' : 'room-status-unavailable'
+        );
+        roomDetailsCard.appendChild(availabilityStatus);
+
+        // Cost
+        const costElement = document.createElement('p');
+        costElement.textContent = `Cost: $${roomData.cost || 'N/A'}`;
+        roomDetailsCard.appendChild(costElement);
+
+        // AQI
+        const aqiElement = document.createElement('p');
+        aqiElement.textContent = `AQI: ${roomData.aqi || 'N/A'}`;
+        roomDetailsCard.appendChild(aqiElement);
+
+        // WQI
+        const wqiElement = document.createElement('p');
+        wqiElement.textContent = `WQI: ${roomData.wqi || 'N/A'}`;
+        roomDetailsCard.appendChild(wqiElement);
+
+
+        return roomDetailsCard;
+          }
+
+        listenForRoomDetails()
+        }
+        else {
+            roomDetailsContainer.innerHTML = '<p>Room ID not specified.</p>';
+        }
+            </script>
+</body>
+
+
+</html>
